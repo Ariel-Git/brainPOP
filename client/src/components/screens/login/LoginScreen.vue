@@ -9,7 +9,8 @@
 // COMPONENTS
 import Logo from '@/components/base/logo/Logo.vue'
 import LoginForm from '@/components/compositions/forms/login/LoginForm.vue'
-
+import { loginRequest } from '@/services/api';
+import { useUserStore } from '@/stores/user';
 export default {
   name: 'LoginScreen',
   emits: ['submit'],
@@ -21,8 +22,17 @@ export default {
     return {}
   },
   methods: {
-    submit(credentials) {
-      this.$emit('submit', credentials)
+    async submit(credentials) {
+      try {
+        const response = await loginRequest(credentials);
+        const userStore = useUserStore();
+        userStore.setUserToken(`${response.data.token_type} ${response.data.access_token.plainTextToken}`); // for summary screen
+        userStore.login(()=>{
+          this.$router.push({ name: 'home' })
+        })
+      } catch (err) {
+        err.value = "Failed to login. Please try again later.";
+      }
     }
   }
 }

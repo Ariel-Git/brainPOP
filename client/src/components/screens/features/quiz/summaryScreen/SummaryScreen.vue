@@ -11,12 +11,11 @@
 
   <div class="quiz-container">
     <!-- Display Questions and Answers -->
-    <div
-      class="quiz-content"
-      v-for="(question, questionIndex) in questions"
-      :key="question.id"
-    >
-      <div class="quiz-question">
+     <div class="quiz-content-warper" v-for="(question, questionIndex) in questions"
+     :key="question.id">
+    <div class="quiz-content">
+      <div class="quiz-answers">
+        <div class="quiz-question">
         <div class="question-number">
           <span>{{ question.id }}</span>
         </div>
@@ -24,8 +23,6 @@
           <p>{{ question.question }}</p>
         </div>
       </div>
-
-      <div class="quiz-answers">
         <!-- Loop through the answers -->
         <div
           class="answer-option"
@@ -50,6 +47,8 @@
           </div>
         </div>
       </div>
+      <div class="underline"></div>
+    </div>
     </div>
   </div>
 </template>    
@@ -115,6 +114,9 @@ template>.navigation{
     color: #333;
     flex-wrap: wrap;
     align-content: center;
+    .quiz-content-warper{
+      width: 40%;
+    }
 }
 header {
   background: #eef7f7;
@@ -126,11 +128,10 @@ header {
 /* Main Content */
 .quiz-content {
   flex: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   .quiz-question {
     display: flex;
     margin-bottom: 20px;
@@ -143,12 +144,17 @@ header {
       font-size: 18px;
     }
   }
-
+  
   .quiz-answers {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 100%;
+    .answer-option.selected{
+      .answer-label {
+        border-color: #198786;
+        background-color: #ccf5f5;
+      }
+    }
     .answer-option {
       display: flex;
       align-items: center;
@@ -186,10 +192,7 @@ header {
     .answer-option.correct{
       background-color: #f0fff0;
       border-color: #3da461;
-      .answer-label {
-        border-color: #198786;
-        background-color: #ccf5f5;
-      }
+      
       .xv{
         background-color: #007906a1;
       }
@@ -197,16 +200,24 @@ header {
     .answer-option.incorrect{
       background-color: #fdf7f7;
       border-color: #ec407a;
-      .answer-label {
-        border-color: #198786;
-        background-color: #ccf5f5;
-      }
       .xv{
         background-color: #d80a0ae7;
       }
     }
+    .answer-option.correct, .answer-option.incorrect{
+      .answer-label {
+        border-color: #198786;
+        background-color: #ccf5f5;
+      }
+    }
   }
+
+div.underline {
+    background: #dddddd;
+    height: 1px;
+    width: 100vw;
+    margin-top: 3em;
+}
 }
 
 </style>
-<!--  -->

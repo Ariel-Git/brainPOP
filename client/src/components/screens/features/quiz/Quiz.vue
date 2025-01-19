@@ -1,5 +1,5 @@
 <template>
-  <div class="quiz_container">
+  <div>
     <div v-if="data">
       <QuizStartScreen v-if="quizState === QUIZ_STATES.START" :name="data.name" :questionsLength="data.questions.length" @start="start"></QuizStartScreen>
       <QuizQuestionsScreen v-if="quizState === QUIZ_STATES.QUESTIONS"></QuizQuestionsScreen>

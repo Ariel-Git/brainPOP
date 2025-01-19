@@ -99,12 +99,10 @@ if exist "%tempfile%" (
 rem Navigate to the server path
 cd %SERVER_PATH%
 
-rem Run Laravel commands
-php artisan migrate:rollback || exit /b 1
-php artisan migrate || exit /b 1
-php artisan make:seeder DatabaseSeeder || exit /b 1
+rem Run Laravel commands and test automation
+php artisan migrate:refresh || exit /b 1
+php artisan test --testsuite=Feature || exit /b 1
 php artisan db:seed || exit /b 1
-
 rem Navigate back to the previous directory
 cd ..
 exit /b 0

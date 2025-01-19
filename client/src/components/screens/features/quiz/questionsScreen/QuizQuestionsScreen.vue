@@ -5,10 +5,12 @@
         { text: 'Quiz', to: '' }
       ]"
     />
+    <div class="headerSpacer">
+    </div>
   <div class="quiz-container">
-    <!-- Display Loading State -->
-    <div v-if="loading">
-      <p>Loading questions...</p>
+    <!-- Display sending State -->
+    <div v-if="sending">
+      <p>Sending answers...</p>
     </div>
     <!-- Display Error State -->
     <div v-else-if="error">
@@ -43,13 +45,12 @@
           </span>
           <label :for="'answer-' + answer.id">{{ answer.answer }}</label>
         </div>
-        </div>
       </div>
-    
+    </div>
   </div>
   <!-- Navigation Buttons -->
   <footer class="quiz-footer">
-    <div class="navigation" v-if="!loading && !error">
+    <div class="footer-navigation" v-if="!error">
       <button @click="goBack" class="nav-button button back-button" :disabled="currentQuestionIndex === 0">Back</button>
       <button v-if="!isLastQuestion" @click="goNext" :disabled="!canProceed" class="nav-button button">Next</button>
       <button v-if="isLastQuestion" @click="submitQuiz" :disabled="!canProceed" class="nav-button button">Submit</button>
@@ -58,12 +59,11 @@
 </template>
 
 <script>
-import BackgroundWave from "@/components/base/backgrounds/wave/BackgroundWave.vue";
 import Navigator from '@/components/compositions/navigator/Navigator.vue';
 import { computed, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useQuizStore } from "@/stores/quizStore";
-import { fetchQuiz } from "@/services/api";
+import { submitAnswers } from "@/services/api";
 
 export default {
   name: "QuizQuestionsScreen",
@@ -72,23 +72,11 @@ export default {
     const router = useRouter();
     const store = useQuizStore();
 
-    const loading = ref(true);
+    const sending = ref(false);
     const error = ref(null);
     const quizSubject = ref(null);
 
-    const fetchQuestions = async () => {
-      try {
-        const response = await fetchQuiz();
-        quizSubject.value = response.data.title;
-        store.setQuizSubject(response.data.title); // for summary screen
-        store.setQuestions(response.data.questions); // Updated to use the `questions` field of the API response.
-      } catch (err) {
-        error.value = "Failed to fetch quiz questions. Please try again later.";
-      } finally {
-        loading.value = false;
-      }
-    };
-
+    quizSubject.value = store.quizSubject
     const currentQuestion = computed(
       () => store.questions[store.currentQuestionIndex]
     );
@@ -122,39 +110,29 @@ export default {
 
     try {
       // Send the answers to the backend
-      const response = await fetch("http://localhost:3000/api/quiz/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ answers: formattedAnswers }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result);
-        // Redirect to the summary page or show the result
+      sending.value = true;
+      const response = await submitAnswers( JSON.stringify({ answers: formattedAnswers }));
+      console.log(response);
+      if (response.status === 200) {
+        sending.value = false;
         router.push({ path: "/summary", query: {
-          correct: result.correct,
-          total: result.total,
-          answers: JSON.stringify(result.answers),
+          correct: response.data.correct,
+          total: response.data.total,
+          answers: JSON.stringify(response.data.answers),
         } });
       } else {
+        sending.value = false;
         // Handle errors
-        const errorData = await response.json();
-        alert(`Error: ${errorData.message || "Failed to submit the quiz"}`);
+        alert(`Error: ${response.errorData.message || "Failed to submit the quiz"}`);
       }
     } catch (err) {
-      alert("Error: Could not connect to the server.");
+      sending.value = false;
+      alert("Error: Could not send your answers");
     }
   };
 
-    onMounted(() => {
-      fetchQuestions();
-    });
-
     return {
-      loading,
+      sending,
       error,
       quizSubject,
       currentQuestion,
@@ -180,8 +158,13 @@ export default {
   width: 100%;
   font-family: Arial, sans-serif;
   color: #333;
+  
 }
-
+  body .navigation {
+    position: unset !important;
+    width: 100vw !important;
+    padding-left: 3em !important;
+}
 /* Main Content */
 .quiz-content {
   flex: 1;
@@ -252,6 +235,8 @@ export default {
   bottom: 0;
   padding: 10px;
   text-align: right;
+  .footer-navigation {
+    
   .button {
     padding: 10px 20px;
     border: none;
@@ -270,6 +255,7 @@ export default {
     background-color:#ffffff;
     color: #00796b;
   }
+}
 }
 
 </style>

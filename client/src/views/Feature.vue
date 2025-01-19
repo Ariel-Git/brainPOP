@@ -1,6 +1,16 @@
 <template>
-  <div class="feature_container">
-    <component v-if="supportedFeatures[featureType]" :data="data" :is="featureType" />
+  <div>
+    <!-- Loading spinner when fetching quiz data -->
+    <div v-if="loading" class="loader-container">
+      <div class="loader">Loading...</div>
+    </div>
+    <div v-if="error" class="error-container">
+      <div class="error">{{ errorMessage }}</div>
+    </div>
+    <!-- Display feature if supported -->
+    <component v-if="supportedFeatures[featureType] && !loading" :data="data" :is="featureType" />
+
+    <!-- Display error message when feature is not supported -->
     <span v-else>{{ featureType }} feature is NOT supported YET</span>
   </div>
 </template>
@@ -8,6 +18,8 @@
 <script>
 // FEATURE TYPES
 import Quiz from '@/components/screens/features/quiz/Quiz.vue'
+import { fetchQuiz } from "@/services/api";
+import { useQuizStore } from "@/stores/quizStore";
 
 export default {
   name: 'Feature',
@@ -20,19 +32,42 @@ export default {
         quiz: true
       },
       featureType: 'quiz',
-      data: null
-    }
+      loading: true, // Added loading state
+      error: false,
+      errorMessage:null
+    };
   },
-  mounted() {
-    this.featureType = this.$route.params.type?.toLowerCase() || this.featureType.toLowerCase()
-
-    // fetch data
-    this.data = {
-      name: 'Test Quiz',
-      questions: ([].length = 10)
+  computed: {
+    data() {
+      const store = useQuizStore();
+      return { 
+        name: store.quizSubject,
+        questions: store.questions.length
+      };
     }
+  },  
+  mounted() {
+    this.featureType = this.$route.params.type?.toLowerCase() || this.featureType.toLowerCase();
+    
+    const store = useQuizStore();
+    
+    // Fetch data asynchronously
+    (async () => {
+      try {
+        const response = await fetchQuiz();
+        
+        store.setQuizSubject(response.data.title); 
+        store.setQuestions(response.data.questions); 
+        
+        this.loading = false;
+      } catch (err) {
+        console.log(err);
+        this.errorMessage = "Failed to fetch quiz questions. Please try again later."
+        this.loading = false; 
+      }
+    })();
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -40,5 +75,24 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative; 
+}
+
+.loader-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8); 
+}
+
+.loader {
+  font-size: 1.5em;
+  color: #00796b;
+  font-weight: bold;
 }
 </style>

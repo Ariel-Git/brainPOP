@@ -26,7 +26,7 @@
 <script>
 // CONFIGURATIONS
 import { THEMES as BUTTON_THEMES } from '@/components/base/button/config.js'
-
+import { useQuizStore } from "@/stores/quizStore";
 // COMPONENTS
 import BackgroundWave from '@/components/base/backgrounds/wave/BackgroundWave.vue'
 import BaseButton from '@/components/base/button/BaseButton.vue'
@@ -50,10 +50,12 @@ export default {
     name: {
       type: String,
       default: 'Quiz name'
-    },
-    questionsLength: {
-      type: Number,
-      default: 10
+    }
+  },
+  computed: {
+    questionsLength() {
+      const store = useQuizStore();
+      return store.questions.length; 
     }
   },
   methods: {
@@ -67,9 +69,6 @@ export default {
 @import '@/utilities/css/vars/vars.scss';
 
 .start_container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
   color: #343a41;
 }

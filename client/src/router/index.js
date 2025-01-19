@@ -7,7 +7,6 @@ import SummaryScreen from '@/components/screens/features/quiz/summaryScreen/Summ
 
 const isLoggedIn = () => {
   const store = useUserStore()
-
   return store.isLoggedIn
 }
 

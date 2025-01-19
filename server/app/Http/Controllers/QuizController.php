@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
 use App\Models\Answer;
+use App\Models\SubmittedAnswer;
+use App\Http\Requests\SubmitAnswersRequest;
+use App\Http\Controllers\Controller;
 
 class QuizController extends Controller
 {
@@ -19,24 +22,41 @@ class QuizController extends Controller
         
         return response()->json($quiz);
     }
-    public function submit(Request $request)
+    public function submit(SubmitAnswersRequest $request)
     {
-        $answers = $request->input('answers');
-        $correctCount = 0;
+        try{
+            $validatedData = $request->validated();
+            $answers = json_decode($validatedData['answers'], true)['answers'];
+            $correctCount = 0;
 
-        $answersWithIsCorrect = [];
-        foreach ($answers as $answer) {
-            $isCorrect = Answer::where('id', $answer['selectedAnswer'])->value('is_correct');
-            if ($isCorrect) $correctCount++;
-            
-            $answer = array_merge($answer, ['isCorrect' => $isCorrect]);
-            array_push($answersWithIsCorrect,$answer);
+            $answersWithIsCorrect = [];
+            foreach ($answers as $answer) {
+                $isCorrect = Answer::where('id', $answer['selectedAnswer'])->value('is_correct');
+                if ($isCorrect) $correctCount++;
+                
+                $answer = array_merge($answer, ['isCorrect' => $isCorrect]);
+                array_push($answersWithIsCorrect, $answer);
+            }
+            SubmittedAnswer::create([
+                'user_id' => auth()->id(), 
+                'answers' => json_encode($answers) 
+            ]);
+            return response()->json([
+                'correct' => $correctCount,
+                'total' => count($answers),
+                'answers' => $answersWithIsCorrect
+            ]);
+        }catch(\Exception $err){
+            throw $err;
         }
-
-        return response()->json([
-            'correct' => $correctCount,
-            'total' => count($answers),
-            'answers' => $answersWithIsCorrect
-        ]);
+        
+    }
+    public function getMyAnswers(){
+        try{
+            $submittedAnswers = SubmittedAnswer::where('id', auth()->id())->get();
+            return response()->json($submittedAnswers);
+        }catch(\Exception $err){
+            throw $err;
+        }
     }
 }

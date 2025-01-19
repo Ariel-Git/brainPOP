@@ -10,15 +10,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-       // DB::table('users')->insert(['name' => 'tester', 'password', bcrypt('123456')]);
-        DB::table('quizzes')->insert(['title' => 'General Knowledge']);
+        DB::table('users')->insert(['name' => 'tester', 'email' => 'a@b.c','password' => bcrypt('123456')]);
+        DB::table('quizzes')->insert(['title' => 'Capital Cities']);
 
         DB::table('questions')->insert([
             ['quiz_id' => 1, 'question' => 'What is the capital of France?'],
             ['quiz_id' => 1, 'question' => 'What is the capital of Germany?'],
             ['quiz_id' => 1, 'question' => 'What is the capital of Israel?'],
             ['quiz_id' => 1, 'question' => 'What is the capital of Spain?'],
-
+            ['quiz_id' => 1, 'question' => 'What is the capital of Australia?'],
         ]);
 
         DB::table('answers')->insert([
@@ -38,6 +38,10 @@ class DatabaseSeeder extends Seeder
             ['question_id' => 4, 'answer' => 'Berlin', 'is_correct' => false],
             ['question_id' => 4, 'answer' => 'Jerusalem', 'is_correct' => false],
             ['question_id' => 4, 'answer' => 'Madrid', 'is_correct' => true],
+            ['question_id' => 5, 'answer' => 'Perth', 'is_correct' => false],
+            ['question_id' => 5, 'answer' => 'Canberra', 'is_correct' => true],
+            ['question_id' => 5, 'answer' => 'Sydney', 'is_correct' => false],
+            ['question_id' => 5, 'answer' => 'Melbourne', 'is_correct' => false],
         ]);
     }
 }

@@ -48,7 +48,7 @@ class LoginTest extends TestCase
 
         $response->assertStatus(401)
             ->assertJson([
-                'message' => 'Invalid login details',
+                'message' => 'Invalid credentials',
             ]);
     }
 
@@ -69,7 +69,7 @@ class LoginTest extends TestCase
 
         $response->assertStatus(401)
             ->assertJson([
-                'message' => 'Unauthorized',
+                'message' => 'Invalid credentials',
             ]);
     }
 
