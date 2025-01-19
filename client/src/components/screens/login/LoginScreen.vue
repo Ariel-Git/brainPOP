@@ -2,6 +2,9 @@
   <main class="login_content">
     <logo />
     <LoginForm @submit="submit($event)"></LoginForm>
+    <div v-if="error" class="error-container">
+      <div class="error">{{ errorMessage }}</div>
+    </div>
   </main>
 </template>
 
@@ -19,7 +22,10 @@ export default {
     LoginForm
   },
   data() {
-    return {}
+    return {
+      error: false,
+      errorMessage:null
+    }
   },
   methods: {
     async submit(credentials) {
@@ -31,7 +37,8 @@ export default {
           this.$router.push({ name: 'home' })
         })
       } catch (err) {
-        err.value = "Failed to login. Please try again later.";
+        this.error = true;
+        this.errorMessage = "Failed to login. Please try again later.";
       }
     }
   }

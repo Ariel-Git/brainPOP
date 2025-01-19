@@ -8,7 +8,7 @@
       <div class="error">{{ errorMessage }}</div>
     </div>
     <!-- Display feature if supported -->
-    <component v-if="supportedFeatures[featureType] && !loading" :data="data" :is="featureType" />
+    <component v-if="supportedFeatures[featureType] && !loading && !error" :data="data" :is="featureType" />
 
     <!-- Display error message when feature is not supported -->
     <span v-else>{{ featureType }} feature is NOT supported YET</span>
@@ -61,9 +61,9 @@ export default {
         
         this.loading = false;
       } catch (err) {
-        console.log(err);
         this.errorMessage = "Failed to fetch quiz questions. Please try again later."
         this.loading = false; 
+        this.error = true;
       }
     })();
   }

@@ -8,11 +8,13 @@ use App\Models\Answer;
 use App\Models\SubmittedAnswer;
 use App\Http\Requests\SubmitAnswersRequest;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
 {
     public function index()
     {
+        try{
         $quiz = Quiz::with(['questions' => function ($query) {
             $query->with(['answers' => function ($answerQuery) {
                 // Select specific columns and exclude 'is_correct'
@@ -21,6 +23,15 @@ class QuizController extends Controller
         }])->find(1);
         
         return response()->json($quiz);
+    }catch(\Exception $err){
+        Log::error('Exception details:', [
+            'message' => $err->getMessage(),
+            'file' => $err->getFile(),
+            'line' => $err->getLine(),
+            'trace' => $err->getTraceAsString(),
+        ]);
+        return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
+    }
     }
     public function submit(SubmitAnswersRequest $request)
     {
@@ -47,16 +58,28 @@ class QuizController extends Controller
                 'answers' => $answersWithIsCorrect
             ]);
         }catch(\Exception $err){
-            throw $err;
+            Log::error('Exception details:', [
+                'message' => $err->getMessage(),
+                'file' => $err->getFile(),
+                'line' => $err->getLine(),
+                'trace' => $err->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
         }
         
     }
     public function getMyAnswers(){
         try{
-            $submittedAnswers = SubmittedAnswer::where('id', auth()->id())->get();
+            $submittedAnswers = SubmittedAnswer::where('user_id', auth()->id() )->get();
             return response()->json($submittedAnswers);
         }catch(\Exception $err){
-            throw $err;
+            Log::error('Exception details:', [
+                'message' => $err->getMessage(),
+                'file' => $err->getFile(),
+                'line' => $err->getLine(),
+                'trace' => $err->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
         }
     }
 }
