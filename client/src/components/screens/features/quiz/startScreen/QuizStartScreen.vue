@@ -55,7 +55,7 @@ export default {
   computed: {
     questionsLength() {
       const store = useQuizStore();
-      return store.questions.length; 
+      return JSON.parse(store.questions).length; 
     }
   },
   methods: {

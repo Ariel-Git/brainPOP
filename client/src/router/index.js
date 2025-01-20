@@ -4,9 +4,11 @@ import Feature from '../views/Feature.vue'
 
 import { useUserStore } from '@/stores/user'
 import SummaryScreen from '@/components/screens/features/quiz/summaryScreen/SummaryScreen.vue'
+import { useQuizStore } from '@/stores/quizStore'
 
 const isLoggedIn = () => {
   const store = useUserStore()
+  
   return store.isLoggedIn
 }
 
@@ -37,18 +39,18 @@ const router = createRouter({
     },
     {
       path: '/summary',
-      component: SummaryScreen,
-      props: (route) => ({
-        correct: parseInt(route.query.correct),
-        total: parseInt(route.query.total),
-        answers: JSON.parse(route.query.answers),
-      }),
+      name: 'summary',
+      component: SummaryScreen
     }
 
   ]
 })
 
 router.beforeEach(to => {
+  const quizStore = useQuizStore();
+  if(quizStore.getQuizResult && to.name != 'summary'){
+    return '/summary'
+  }
   // BLOCK LOGIN FOR LOGGED IN USERS
   if (to.name === 'login' && isLoggedIn()) {
     return '/'

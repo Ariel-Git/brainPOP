@@ -15,7 +15,6 @@ export async function fetchQuiz() {
 export async function submitAnswers(answers) {
     const userStore = useUserStore();
     const userToken = userStore.getUserToken; 
-    console.log(answers);
     try {
         return await API.post(
             '/quiz/submit',

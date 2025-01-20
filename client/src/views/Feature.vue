@@ -42,7 +42,7 @@ export default {
       const store = useQuizStore();
       return { 
         name: store.quizSubject,
-        questions: store.questions.length
+        questions: JSON.parse(store.questions).length
       };
     }
   },  
@@ -57,7 +57,7 @@ export default {
         const response = await fetchQuiz();
         
         store.setQuizSubject(response.data.title); 
-        store.setQuestions(response.data.questions); 
+        store.setQuestions(JSON.stringify(response.data.questions)); 
         
         this.loading = false;
       } catch (err) {

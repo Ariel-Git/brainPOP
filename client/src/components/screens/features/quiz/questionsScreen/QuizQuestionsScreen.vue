@@ -77,11 +77,12 @@ export default {
     const quizSubject = ref(null);
 
     quizSubject.value = store.quizSubject
+    const parsedQuestions = JSON.parse(store.questions);
     const currentQuestion = computed(
-      () => store.questions[store.currentQuestionIndex]
+      () => parsedQuestions[store.currentQuestionIndex]
     );
     const currentQuestionIndex = computed(() => store.currentQuestionIndex);
-    const questions = computed(() => store.questions);
+    const questions = computed(() => parsedQuestions);
 
     const selectedOption = computed({
       get: () => store.userAnswers[store.currentQuestionIndex] ?? null,
@@ -112,14 +113,14 @@ export default {
       // Send the answers to the backend
       sending.value = true;
       const response = await submitAnswers( JSON.stringify({ answers: formattedAnswers }));
-      console.log(response);
       if (response.status === 200) {
         sending.value = false;
-        router.push({ path: "/summary", query: {
+        store.setQuizResult(JSON.stringify({
           correct: response.data.correct,
           total: response.data.total,
-          answers: JSON.stringify(response.data.answers),
-        } });
+          answers: response.data.answers,
+        }));
+        router.push({ path: "/summary" }).then(() => { window.location.reload(); });
       } else {
         sending.value = false;
         // Handle errors

@@ -59,31 +59,29 @@ import { ref } from "vue";
 
 export default {
   name: "SummaryScreen",
-  props: {
-    correct: { type: Number, required: true },
-    total: { type: Number, required: true },
-    answers: { type: Array, required: true }, // Expected structure from server response
-  },
   components: { Navigator },
-  setup(props) {
+  setup() {
     const store = useQuizStore();
     const loading = ref(true);
     const error = ref(null);
-    const questions = ref(store.questions);
-
+    const quizResult = JSON.parse(store.getQuizResult)
+   
     // Helper function to find the answer details for a specific question
     const getAnswerDetails = (questionId) => {
+
       return (
-        props.answers.find((answer) => answer.questionId === questionId) || {
+        quizResult.answers.find((answer) => answer.questionId === questionId) || {
           selectedAnswer: null,
           isCorrect: null,
         }
       );
     };
-
     return {
-      quizSubject: store.quizSubject,
-      questions,
+      correct:quizResult.correct,
+      total:quizResult.total,
+      answers:quizResult.answers,
+      quizSubject: store.getQuizSubject,
+      questions:JSON.parse(store.getQuestions),
       loading,
       error,
       getAnswerDetails,
