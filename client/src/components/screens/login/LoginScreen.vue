@@ -37,8 +37,14 @@ export default {
           this.$router.push({ name: 'home' })
         })
       } catch (err) {
+        switch(err.status){
+          case 404: case 422:
+            this.errorMessage = "Login Failed: Incorrect Credentials";
+          break;
+          default:
+            this.errorMessage = "Login Failed: Please try again later";
+        }
         this.error = true;
-        this.errorMessage = "Failed to login. Please try again later.";
       }
     }
   }
