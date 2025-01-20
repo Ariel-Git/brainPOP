@@ -31,7 +31,7 @@ class QuizController extends Controller
     {
         try{
             $validatedData = $request->validated();
-            return $quizService->handleQuizSubmit($validatedData);
+            return response()->json($quizService->handleQuizSubmit($validatedData));
             
         }catch(\Exception $err){
             Log::error('Exception details:', [

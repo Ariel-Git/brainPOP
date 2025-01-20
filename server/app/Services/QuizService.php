@@ -26,7 +26,12 @@ class QuizService
         }])->find(1);
         return $quiz;
     }
-
+    /**
+     * Submit, calculate score and return it
+     * @param no
+     * @return array
+     * @throws \Exception
+     * */
     public function handleQuizSubmit($reqData)
     {
         $answers = json_decode($reqData['answers'], true)['answers'];
@@ -44,13 +49,18 @@ class QuizService
                 'user_id' => auth()->id(), 
                 'answers' => json_encode($answers) 
             ]);
-            return response()->json([
+            return [
                 'correct' => $correctCount,
                 'total' => count($answers),
                 'answers' => $answersWithIsCorrect
-            ]);
+            ];
     }
-    
+    /**
+     * Get the user quiz history
+     * @param no
+     * @return array
+     * @throws \Exception
+     * */
     public function getUserQuizHistory()
     {
         $submittedAnswers = SubmittedAnswer::where('user_id', auth()->id() )->get();
