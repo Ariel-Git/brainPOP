@@ -33,27 +33,60 @@ class QuizService
      * @throws \Exception
      * */
     public function handleQuizSubmit($reqData)
-    {
-        $answers = json_decode($reqData['answers'], true)['answers'];
-            $correctCount = 0;
+    {   
+        // Decode and extract answers from the request data
+        $answers = json_decode($reqData['answers'], true)['answers'] ?? [];
 
-            $answersWithIsCorrect = [];
-            foreach ($answers as $answer) {
-                $isCorrect = Answer::where('id', $answer['selectedAnswer'])->value('is_correct');
-                if ($isCorrect) $correctCount++;
-                
-                $answer = array_merge($answer, ['isCorrect' => $isCorrect]);
-                array_push($answersWithIsCorrect, $answer);
-            }
-            SubmittedAnswer::create([
-                'user_id' => auth()->id(), 
-                'answers' => json_encode($answers) 
-            ]);
+        // Check for valid input
+        if (empty($answers)) {
             return [
-                'correct' => $correctCount,
-                'total' => count($answers),
-                'answers' => $answersWithIsCorrect
+                'correct' => 0,
+                'total' => 0,
+                'answers' => [],
             ];
+        }
+    
+        // Extract 'selectedAnswer' IDs while handling missing keys gracefully
+        $selectedAnswerIds = array_map(
+            fn($answer) => $answer['selectedAnswer'] ?? null,
+            $answers
+        );
+    
+        // Filter out invalid/null selectedAnswer IDs
+        $selectedAnswerIds = array_filter($selectedAnswerIds);
+    
+        // Retrieve correct answers (is_correct mapping) in a single query
+        $answersMap = Answer::whereIn('id', $selectedAnswerIds)
+            ->pluck('is_correct', 'id');
+    
+        $correctCount = 0;
+        $answersWithIsCorrect = [];
+    
+        // Process answers to check correctness
+        foreach ($answers as $answer) {
+            $selectedAnswer = $answer['selectedAnswer'] ?? null;
+            $isCorrect = $answersMap[$selectedAnswer] ?? false;
+    
+            if ($isCorrect) {
+                $correctCount++;
+            }
+    
+            // Add isCorrect info to the current answer
+            $answersWithIsCorrect[] = array_merge($answer, ['isCorrect' => $isCorrect]);
+        }
+    
+        // Store submitted answers in the database
+        SubmittedAnswer::create([
+            'user_id' => auth()->id(),
+            'answers' => json_encode($answersWithIsCorrect), // Store enhanced answers with isCorrect info
+        ]);
+    
+        // Return response payload
+        return [
+            'correct' => $correctCount,
+            'total' => count($answers),
+            'answers' => $answersWithIsCorrect,
+        ];
     }
     /**
      * Get the user quiz history
