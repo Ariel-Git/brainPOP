@@ -38,7 +38,7 @@ export default {
         })
       } catch (err) {
         switch(err.status){
-          case 404: case 422:
+          case 401: case 422:
             this.errorMessage = "Login Failed: Incorrect Credentials";
           break;
           default:
