@@ -115,12 +115,7 @@ export default {
       const response = await submitAnswers( JSON.stringify({ answers: formattedAnswers }));
       if (response.status === 200) {
         sending.value = false;
-        store.setQuizResult(JSON.stringify({
-          correct: response.data.correct,
-          total: response.data.total,
-          answers: response.data.answers,
-        }));
-        router.push({ path: "/summary" }).then(() => { window.location.reload(); });
+        router.push({ path: "/summary" });
       } else {
         sending.value = false;
         // Handle errors

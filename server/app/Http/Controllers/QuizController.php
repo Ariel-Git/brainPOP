@@ -57,4 +57,17 @@ class QuizController extends Controller
             return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
         }
     }
+    public function getLastAnswers(QuizService $quizService){
+        try{
+            return $quizService->getUserLastAnswers();
+        }catch(\Exception $err){
+            Log::error('Exception details:', [
+                'message' => $err->getMessage(),
+                'file' => $err->getFile(),
+                'line' => $err->getLine(),
+                'trace' => $err->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
+        }
+    }
 }

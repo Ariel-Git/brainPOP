@@ -1,7 +1,11 @@
 
 <template>
+  <!-- Loading spinner when fetching quiz data -->
+  <div v-if="loading" class="loader-container">
+      <div class="loader">Loading...</div>
+    </div>
   <Navigator
-    :items="[ { text: quizSubject, to: `/feature/quiz` }, { text: 'Quiz', to: '' } ]"
+    :items="[ { text:  quizSubject , to: `/feature/quiz` }, { text: 'Quiz', to: '' } ]"
   />
   <div class="headerSpacer">
   </div>
@@ -54,44 +58,88 @@
 </template>    
 <script>
 import Navigator from "@/components/compositions/navigator/Navigator.vue";
+import { getLastResult } from "@/services/api";
 import { useQuizStore } from "@/stores/quizStore";
 import { ref } from "vue";
 
 export default {
   name: "SummaryScreen",
   components: { Navigator },
-  setup() {
-    const store = useQuizStore();
-    const loading = ref(true);
-    const error = ref(null);
-    const quizResult = JSON.parse(store.getQuizResult)
-   
-    // Helper function to find the answer details for a specific question
-    const getAnswerDetails = (questionId) => {
-
-      return (
-        quizResult.answers.find((answer) => answer.questionId === questionId) || {
-          selectedAnswer: null,
-          isCorrect: null,
-        }
-      );
-    };
-    return {
-      correct:quizResult.correct,
-      total:quizResult.total,
-      answers:quizResult.answers,
-      quizSubject: store.getQuizSubject,
-      questions:JSON.parse(store.getQuestions),
-      loading,
-      error,
-      getAnswerDetails,
-    };
+  computed: {
+    questions() {
+      const store = useQuizStore();
+      return JSON.parse(store.getQuestions); 
+    },
+    quizSubject() {
+      const store = useQuizStore();
+      return store.getQuizSubject; 
+    },
   },
+  setup() {
+  const store = useQuizStore();
+  const loading = ref(true);
+  const error = ref(null);
+  const quizResult = ref(null); // Reactive reference to store the quiz result
+  const correct = ref(null);
+  const total = ref(null);
+  // Fetching the last result
+ (async () => {
+    try {
+      loading.value = true;
+      const result = await getLastResult();
+      const userAnswers = JSON.parse(result.data.answers);
+      quizResult.value = userAnswers;
+      total.value = userAnswers.length;
+      correct.value = userAnswers.filter((answer)=> answer.isCorrect === 1).length;
+      loading.value = false;
+    } catch (err) {
+      console.error(err);
+      error.value = 'Failed to load the quiz result.';
+      loading.value = false;
+    }
+  })();
+
+  // Helper function to find the answer details for a specific question
+  const getAnswerDetails = (questionId) => {
+    return (
+      (quizResult.value || []).find((answer) => answer.questionId === questionId) || {
+        selectedAnswer: null,
+        isCorrect: null,
+      }
+    );
+  };
+
+  return {
+    loading,
+    correct,
+    total,
+    quizResult,
+    error,
+    getAnswerDetails,
+  };
+},
 };
 </script>
 
 
 <style lang="scss">
+.loader-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8); 
+}
+
+.loader {
+  font-size: 1.5em;
+  color: #00796b;
+  font-weight: bold;
+}
 template>.navigation{
   position:unset;
 }

@@ -21,5 +21,6 @@ Route::post('login', [TokenController::class, 'login']);
  Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quiz', [QuizController::class, 'index']);
     Route::post('/quiz/submit', [QuizController::class, 'submit']);
-    Route::get('/get-my-answers', [QuizController::class, 'getMyAnswers']);
+    Route::get('user/get-my-answers', [QuizController::class, 'getMyAnswers']);
+    Route::get('user/get-last-answers', [QuizController::class, 'getLastAnswers']);
 });

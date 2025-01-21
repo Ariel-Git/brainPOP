@@ -36,15 +36,6 @@ class QuizService
     {   
         // Decode and extract answers from the request data
         $answers = json_decode($reqData['answers'], true)['answers'] ?? [];
-
-        // Check for valid input
-        if (empty($answers)) {
-            return [
-                'correct' => 0,
-                'total' => 0,
-                'answers' => [],
-            ];
-        }
     
         // Extract 'selectedAnswer' IDs while handling missing keys gracefully
         $selectedAnswerIds = array_map(
@@ -59,17 +50,12 @@ class QuizService
         $answersMap = Answer::whereIn('id', $selectedAnswerIds)
             ->pluck('is_correct', 'id');
     
-        $correctCount = 0;
         $answersWithIsCorrect = [];
     
         // Process answers to check correctness
         foreach ($answers as $answer) {
             $selectedAnswer = $answer['selectedAnswer'] ?? null;
             $isCorrect = $answersMap[$selectedAnswer] ?? false;
-    
-            if ($isCorrect) {
-                $correctCount++;
-            }
     
             // Add isCorrect info to the current answer
             $answersWithIsCorrect[] = array_merge($answer, ['isCorrect' => $isCorrect]);
@@ -81,12 +67,8 @@ class QuizService
             'answers' => json_encode($answersWithIsCorrect), // Store enhanced answers with isCorrect info
         ]);
     
-        // Return response payload
-        return [
-            'correct' => $correctCount,
-            'total' => count($answers),
-            'answers' => $answersWithIsCorrect,
-        ];
+        // Return true on when data saved
+        return true;
     }
     /**
      * Get the user quiz history
@@ -99,6 +81,16 @@ class QuizService
         $submittedAnswers = SubmittedAnswer::where('user_id', auth()->id() )->get();
         return response()->json($submittedAnswers);
     }
-
+    /**
+     * Get the user quiz history
+     * @param no
+     * @return array
+     * @throws \Exception
+     * */
+    public function getUserLastAnswers()
+    {
+        $lastSubmittedAnswers = SubmittedAnswer::where('user_id', auth()->id())->latest()->first();
+        return response()->json($lastSubmittedAnswers);
+    }
     
 }
